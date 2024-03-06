@@ -1,0 +1,24 @@
+.main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 600px;
+  height: 600px;
+  justify-content: center;
+  margin: auto;
+}
+
+.field {
+  width: 30%;
+  height: 30%;
+  background-color: blue;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filled {
+  color: white;
+  font-family: "Roboto";
+  font-size: 6rem;
+}
