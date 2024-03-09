@@ -2,23 +2,25 @@
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  width: 600px;
-  height: 600px;
+  width: 500px;
+  height: 500px;
   justify-content: center;
   margin: auto;
+  background-color: blue;
+  padding: 20px;
+  border-radius: 20px;
 }
 
 .field {
   width: 30%;
   height: 30%;
-  background-color: blue;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: white;
 }
 
 .filled {
-  color: white;
   font-family: "Roboto";
   font-size: 6rem;
 }
