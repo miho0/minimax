@@ -1,5 +1,8 @@
 let board;
 let turnPlayer = true;
+let winner = 0;
+
+let bestAIMove;
 
 const init = () => {
   board = [
@@ -29,6 +32,20 @@ const draw = () => {
       }
     }
   }
+
+  switch (winner) {
+    case 1:
+      console.log("player wins");
+      break;
+    case 2:
+      console.log("Ai wins!");
+      break;
+    case -1:
+      console.log("Draw");
+      break;
+    default:
+      console.log("Game in progress");
+  }
 };
 
 init();
@@ -39,18 +56,33 @@ const playerMove = (e) => {
 };
 
 const move = (field) => {
-  const x = field[0];
-  const y = field[1];
-  if (board[x][y] === 0) {
-    if (turnPlayer) board[x][y] = 1;
-    else board[x][y] = 2;
-    console.log(getResult());
-    draw();
-    turnPlayer = !turnPlayer;
-    if (!turnPlayer) AIMove();
+  if (winner === 0) {
+    const x = field[0];
+    const y = field[1];
+    if (board[x][y] === 0) {
+      if (turnPlayer) board[x][y] = 1;
+      else board[x][y] = 2;
+      winner = getResult();
+      draw();
+      turnPlayer = !turnPlayer;
+      if (!turnPlayer) AIMove();
+    }
   }
 };
 
+const getAllPossibleMoves = () => {
+  let possibleMoves = [];
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (board[i][j] === 0) {
+        possibleMoves.push(`${i}${j}`);
+      }
+    }
+  }
+  return possibleMoves;
+};
+
+// returns the result code: 1 - player wins, 2 - AI wins, -1 - draw, 0 - game still in progress
 const getResult = () => {
   if (board[0][0] === board[0][1] && board[0][1] === board[0][2])
     return board[0][0];
@@ -71,25 +103,60 @@ const getResult = () => {
   if (board[0][2] === board[1][1] && board[1][1] === board[2][0])
     return board[0][2];
 
-  return 0;
-};
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (board[i][j] === 0) return 0;
+    }
+  }
 
-const getAllPossibleMoves = () => {};
+  return -1;
+};
 
 const AIMove = () => {
-  if (!turnPlayer) {
-  }
+  minimax(true, 0);
+  move(bestAIMove);
 };
 
-const minimax = () => {
-  // dobimo vse možne poteze
-  // za vsako potezo hipotetično
+const minimax = (maximizing, depth) => {
+  // TODO heuristic function here
+  const result = getResult();
+  if (result === -1) return 0;
+  if (result === 1) return -10;
+  if (result === 2) return 10;
+
+  const possibleMoves = getAllPossibleMoves();
+  if (maximizing) {
+    let bestScore = -Infinity;
+    for (let i = 0; i < possibleMoves.length; i++) {
+      const x = possibleMoves[i][0];
+      const y = possibleMoves[i][1];
+      board[x][y] = 2;
+      const score = minimax(false, depth + 1);
+      board[x][y] = 0;
+      if (score > bestScore) {
+        bestScore = score;
+        if (depth === 0) bestAIMove = possibleMoves[i];
+      }
+    }
+    return bestScore;
+  } else {
+    let bestScore = Infinity;
+    for (let i = 0; i < possibleMoves.length; i++) {
+      const x = possibleMoves[i][0];
+      const y = possibleMoves[i][1];
+      board[x][y] = 1;
+      const score = minimax(true, depth + 1);
+      board[x][y] = 0;
+      if (score < bestScore) bestScore = score;
+    }
+    return bestScore;
+  }
 };
 
 $(document).ready(function () {
   $(".field").click((e) => playerMove(e));
 });
 
-// heutistic function:
-// if win, 10
-// if lose, 0
+// TODO:
+// heuristic function, difficulty - depth
+// restart (player first, then AI first)
