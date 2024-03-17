@@ -1,17 +1,10 @@
 let board;
+let startingPlayer = true;
 let turnPlayer = true;
 let winner = 0;
 
 let bestAIMove;
-
-const init = () => {
-  board = [
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0],
-  ];
-  draw();
-};
+let difficulty = 5;
 
 const draw = () => {
   for (let i = 0; i < 3; i++) {
@@ -33,22 +26,22 @@ const draw = () => {
     }
   }
 
+  const gameStatusElm = $(".gameStatus");
+
   switch (winner) {
     case 1:
-      console.log("player wins");
+      gameStatusElm.html("Player wins!");
       break;
     case 2:
-      console.log("Ai wins!");
+      gameStatusElm.html("AI wins!");
       break;
     case -1:
-      console.log("Draw");
+      gameStatusElm.html("Draw!");
       break;
     default:
-      console.log("Game in progress");
+      gameStatusElm.html("Game in progress.");
   }
 };
-
-init();
 
 const playerMove = (e) => {
   const field = e.target.classList[0];
@@ -113,16 +106,17 @@ const getResult = () => {
 };
 
 const AIMove = () => {
-  minimax(true, 0);
+  minimax(true, 0, -Infinity, Infinity);
   move(bestAIMove);
 };
 
-const minimax = (maximizing, depth) => {
-  // TODO heuristic function here
+const minimax = (maximizing, depth, alpha, beta) => {
   const result = getResult();
   if (result === -1) return 0;
   if (result === 1) return -10;
   if (result === 2) return 10;
+
+  if (depth >= difficulty) return 0;
 
   const possibleMoves = getAllPossibleMoves();
   if (maximizing) {
@@ -131,12 +125,14 @@ const minimax = (maximizing, depth) => {
       const x = possibleMoves[i][0];
       const y = possibleMoves[i][1];
       board[x][y] = 2;
-      const score = minimax(false, depth + 1);
+      const score = minimax(false, depth + 1, alpha, beta);
       board[x][y] = 0;
       if (score > bestScore) {
         bestScore = score;
         if (depth === 0) bestAIMove = possibleMoves[i];
       }
+      alpha = Math.max(alpha, bestScore);
+      if (beta <= alpha) break;
     }
     return bestScore;
   } else {
@@ -145,18 +141,38 @@ const minimax = (maximizing, depth) => {
       const x = possibleMoves[i][0];
       const y = possibleMoves[i][1];
       board[x][y] = 1;
-      const score = minimax(true, depth + 1);
+      const score = minimax(true, depth + 1, alpha, beta);
       board[x][y] = 0;
       if (score < bestScore) bestScore = score;
+      beta = Math.min(beta, score);
+      if (beta <= alpha) break;
     }
     return bestScore;
   }
 };
 
+const startNewGame = () => {
+  init();
+  startingPlayer = !startingPlayer;
+  turnPlayer = startingPlayer;
+  if (!turnPlayer) AIMove();
+};
+
+const init = () => {
+  board = [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+  ];
+  winner = 0;
+  bestAIMove = undefined;
+  difficulty = $("#difficulty").val();
+  draw();
+};
+
+init();
+
 $(document).ready(function () {
   $(".field").click((e) => playerMove(e));
+  $(".startGameBtn").click(startNewGame);
 });
-
-// TODO:
-// heuristic function, difficulty - depth
-// restart (player first, then AI first)
