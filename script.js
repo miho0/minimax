@@ -105,20 +105,72 @@ const getResult = () => {
   return -1;
 };
 
+const getGameValue = () => {
+  let score = 0;
+  for (let i = 0; i < 3; i++) {
+    let aiValuesRow = 0;
+    let playerValuesRow = 0;
+    let aiValuesColumn = 0;
+    let playerValuesColumn = 0;
+    for (let j = 0; j < 3; j++) {
+      if (board[i][j] === 1) playerValuesRow++;
+      if (board[i][j] === 2) aiValuesRow++;
+      if (board[j][i] === 1) playerValuesColumn++;
+      if (board[j][i] === 2) aiValuesColumn++;
+    }
+    score += Math.pow(2, aiValuesRow) + Math.pow(2, aiValuesColumn);
+    score -= Math.pow(2, playerValuesRow) + Math.pow(2, playerValuesColumn);
+  }
+
+  let playerValuesD1 = 0;
+  let aiValuesD1 = 0;
+  let playerValuesD2 = 0;
+  let aiValuesD2 = 0;
+
+  if (board[1][1] === 1) {
+    playerValuesD1++;
+    playerValuesD2++;
+  }
+
+  if (board[1][1] === 2) {
+    aiValuesD1++;
+    aiValuesD2++;
+  }
+
+  if (board[0][0] === 1) playerValuesD1++;
+  if (board[0][0] === 2) aiValuesD1++;
+
+  if (board[2][2] === 1) playerValuesD1++;
+  if (board[2][2] === 2) aiValuesD1++;
+
+  if (board[2][1] === 1) playerValuesD1++;
+  if (board[2][1] === 2) aiValuesD1++;
+
+  if (board[1][2] === 1) playerValuesD1++;
+  if (board[1][2] === 2) aiValuesD1++;
+
+  score += Math.pow(2, aiValuesD1) + Math.pow(2, aiValuesD2);
+  score -= Math.pow(2, playerValuesD1) + Math.pow(2, playerValuesD2);
+  return score;
+};
+
 const AIMove = () => {
   minimax(true, 0, -Infinity, Infinity);
   move(bestAIMove);
 };
 
 const minimax = (maximizing, depth, alpha, beta) => {
+  // if game is over, return max / min value / 0 if draw
   const result = getResult();
   if (result === -1) return 0;
-  if (result === 1) return -10;
-  if (result === 2) return 10;
-
-  if (depth >= difficulty) return 0;
+  if (result === 1) return -100;
+  if (result === 2) return 100;
 
   const possibleMoves = getAllPossibleMoves();
+
+  // if game is not over and depth is greater than difficulty, return game value based on heuristic function
+  if (depth >= difficulty) return getGameValue();
+
   if (maximizing) {
     let bestScore = -Infinity;
     for (let i = 0; i < possibleMoves.length; i++) {
